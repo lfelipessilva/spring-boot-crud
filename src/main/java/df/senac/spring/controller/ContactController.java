@@ -11,11 +11,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import df.senac.spring.database.ContactRepository;
 import df.senac.spring.entity.Contact;
 
-@Controller
+@RestController
 @RequestMapping("/contact")
 public class ContactController {
 
