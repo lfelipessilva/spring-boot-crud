@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spring Boot</title>
+
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+  <style>
+    .opacity-60 {
+      opacity: 0.60;
+    }
+  </style>
+</head>
+
+<body class="position-relative vh-100">
+  <div class="col-3 position-absolute top-50 start-50 translate-middle">
+    <h3 class="text-center">Manutenção de contato</h3>
+    <form class="d-flex items-center jutify-content-around flex-column gap-4" id="contact-form">
+      <div>
+        <label for="id">Id</label>
+        <input type="text" class="form-control" id="id" disabled>
+      </div>
+
+      <div>
+        <label for="name">Nome do Contato <span class="opacity-60">(required)</span></label>
+        <input type="text" class="form-control" id="name" placeholder="Informe o nome">
+      </div>
+
+      <div>
+        <label for="phone">Telefone <span class="opacity-60">(required)</span></label>
+        <input type="text" class="form-control" id="phone" placeholder="Informe o telefone">
+      </div>
+
+      <div>
+        <label for="email">Email <span class="opacity-60">(required)</span></label>
+        <input type="text" class="form-control" id="email" placeholder="Informe o email">
+      </div>
+
+      <div>
+        <label for="adress">Endereço <span class="opacity-60">(required)</span></label>
+        <input type="text" class="form-control" id="adress" placeholder="Informe o endereço">
+      </div>
+
+      <button type="button" class="btn btn-primary" onClick="saveContact()">Enviar</button>
+      <button type="button" class="btn btn-secondary"
+        onClick="document.getElementById('contact-form').reset()">Limpar</button>
+
+      <!-- Button trigger modal -->
+      <button type="button" class="btn btn-link" data-bs-toggle="modal" data-bs-target="#searchContact">
+        Pesquisar Contato
+      </button>
+    </form>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal fade" id="searchContact" tabindex="-1" aria-labelledby="searchContactLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-6" id="searchContactLabel">Pesquisar contato</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="search-contact">
+            <div>
+              <label for="contact-name-search">Nome</label>
+              <input type="text" class="form-control" id="contact-name-search" placeholder="Infome o nome">
+            </div>
+          </form>
+          <table class="table mt-4" id="contacts-search-table">
+            <thead>
+              <tr class="text-center">
+                <th scope="col">#</th>
+                <th scope="col">Nome</th>
+                <th scope="col">Telefone</th>
+                <th scope="col">Email</th>
+                <th scope="col">Endereço</th>
+                <th scope="col">Editar</th>
+                <th scope="col">Excluir</th>
+              </tr>
+            </thead>
+            <tbody id="contacts-search-table-body">
+
+            </tbody>
+          </table>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+          <button type="button" class="btn btn-success" onClick="searchContact()">Buscar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap Bundle with Popper -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+    crossorigin="anonymous"></script>
+
+  <!-- JQuery -->
+  <script src="https://code.jquery.com/jquery-3.7.0.min.js"
+    integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g=" crossorigin="anonymous"></script>
+
+  <script type="text/javascript">
+
+    $('#age').keypress(function (e) {
+      if (String.fromCharCode(e.which).match(/[^0-9]/g)) {
+        return false
+      }
+    });
+
+    function saveContact() {
+      let method = 'POST';
+      const contact = {
+        id: $("#id").val(),
+        name: $("#name").val(),
+        phone: $("#phone").val(),
+        email: $("#email").val(),
+        adress: $("#adress").val()
+      }
+
+      if (Number(id) > 0) {
+        method = 'PUT';
+      }
+
+      $.ajax({
+        method: method,
+        url: "contact",
+        contentType: "application/json; charset=utf-8",
+        data: JSON.stringify(contact),
+        success: function (response) {
+          console.log(response)
+          $("#id").val(response.id);
+
+          method === 'POST'
+            ? alert("Contato criado!")
+            : alert("Contato alterado!")
+        },
+        error: function (xhr, textStatus, errorThrown) {
+          alert("Houve um problema: " + xhr.responseText);
+        }
+      })
+    }
+
+    function searchContact() {
+      const name = $("#contact-name-search").val()
+
+      let contactSearchTable = document.getElementById('contacts-search-table-body');
+
+      $.ajax({
+        method: "GET",
+        url: `contact/findbyname?name=${name}`,
+        success: function (response) {
+          $('#contacts-search-table > tbody > tr').remove();
+
+          for (let contact of response) {
+            const row = contactSearchTable.insertRow();
+            const idCell = row.insertCell(0);
+            const nameCell = row.insertCell(1);
+            const phoneCell = row.insertCell(2);
+            const emailCell = row.insertCell(3);
+            const addressCell = row.insertCell(4);
+            const editCell = row.insertCell(5);
+            const deleteCell = row.insertCell(6);
+
+            idCell.innerHTML = contact.id;
+            nameCell.innerHTML = contact.name;
+            phoneCell.innerHTML = contact.phone;
+            emailCell.innerHTML = contact.email;
+            addressCell.innerHTML = contact.adress;
+
+            editCell.outerHTML = `<td><button class="btn btn-warning" onClick="placeOnEdit(${contact.id})">Editar</button></td>`;
+            deleteCell.outerHTML = `<td><button class="btn btn-danger" onClick="deleteContact(${contact.id})">Excluir</button></td>`;
+          }
+        }
+      }).fail(function (xhr, status, errorThrown) {
+        alert("Erro ao buscar contato: " + xhr.responseText);
+      });
+    }
+
+    function placeOnEdit(id) {
+      $.ajax({
+        method: "GET",
+        url: `contact/findbyid?contactId=${id}`,
+        success: function (response) {
+          $("#id").val(response.id)
+          $("#name").val(response.name)
+          $("#phone").val(response.phone)
+          $("#email").val(response.email)
+          $("#adress").val(response.adress)
+        }
+      }).fail(function (xhr, status, errorThrown) {
+        alert("Erro ao buscar contato: " + xhr.responseText);
+      });
+
+      $('#searchContact').modal('hide');
+    }
+
+    function deleteContact(id) {
+      $.ajax({
+        method: 'DELETE',
+        url: `contact/${id}`,
+        success: function (response) {
+          alert("Contato excluido!");
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+          alert("Houve um problema: " + xhr.responseText);
+        }
+      })
+    }
+  </script>
+</body>
+
+</html>

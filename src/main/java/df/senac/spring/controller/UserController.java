@@ -29,8 +29,8 @@ public class UserController {
   }
 
   @PostMapping
-  public void create(@RequestBody User user) {
-    repository.save(user);
+  public User create(@RequestBody User user) {
+    return repository.save(user);
   }
 
   @PutMapping

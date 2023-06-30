@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import df.senac.spring.database.ContactRepository;
@@ -28,8 +29,8 @@ public class ContactController {
   }
 
   @PostMapping
-  public void create(@RequestBody Contact contact) {
-    repository.save(contact);
+  public Contact create(@RequestBody Contact contact) {
+    return repository.save(contact);
   }
 
   @PutMapping
@@ -42,5 +43,15 @@ public class ContactController {
   @DeleteMapping("/{id}")
   public void delete(@PathVariable Long id) {
     repository.deleteById(id);
+  }
+
+  @GetMapping(value = "findbyid")
+  public Contact findById(@RequestParam(name = "contactId") Long contactId) {
+    return repository.findById(contactId).get();
+  }
+
+  @GetMapping(value = "findbyname")
+  public List<Contact> findByName(@RequestParam(name = "name") String name) {
+    return repository.findByNameContaining(name);
   }
 }
