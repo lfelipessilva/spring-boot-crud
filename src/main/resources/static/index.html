@@ -11,6 +11,8 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
     integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
 
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
   <style>
     .opacity-60 {
       opacity: 0.60;
@@ -41,9 +43,50 @@
       <button type="button" class="btn btn-secondary"
         onClick="document.getElementById('user-form').reset()">Limpar</button>
 
+      <!-- Button trigger modal -->
+      <button type="button" class="btn btn-link" data-bs-toggle="modal" data-bs-target="#searchUser">
+        Pesquisar Usuário
+      </button>
     </form>
   </div>
 
+  <!-- Modal -->
+  <div class="modal fade" id="searchUser" tabindex="-1" aria-labelledby="searchUserLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="searchUserLabel">Pesquisar usuário</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="search-user">
+            <div>
+              <label for="user-name-search">Nome</label>
+              <input type="text" class="form-control" id="user-name-search" placeholder="Infome o nome">
+            </div>
+          </form>
+          <table class="table mt-4" id="users-search-table">
+            <thead>
+              <tr class="text-center">
+                <th scope="col">#</th>
+                <th scope="col">Nome</th>
+                <th scope="col">Idade</th>
+                <th scope="col">Editar</th>
+                <th scope="col">Excluir</th>
+              </tr>
+            </thead>
+            <tbody id="users-search-table-body">
+              
+            </tbody>
+          </table>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+          <button type="button" class="btn btn-success" onClick="searchUser()">Buscar</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Bootstrap Bundle with Popper -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
@@ -63,20 +106,89 @@
     });
 
     function saveUser() {
+      let method = 'POST';
       const user = {
         id: $("#id").val(),
         name: $("#name").val(),
         age: $("#age").val()
       }
 
+      if (id) {
+        method = 'PUT';
+      }
+
       $.ajax({
-        method: "POST",
+        method: method,
         url: "user",
         contentType: "application/json; charset=utf-8",
         data: JSON.stringify(user),
         success: function (response) {
           $("#id").val(response.id);
-          alert("Usuário criado!");
+
+          method === 'POST'
+            ? alert("Usuário criado!")
+            : alert("Usuário alterado!")
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+          alert("Houve um problema: " + xhr.responseText);
+        }
+      })
+    }
+
+    function searchUser() {
+      const name = $("#user-name-search").val()
+
+      let userSearchTable = document.getElementById('users-search-table-body');
+
+      $.ajax({
+        method: "GET",
+        url: `user/findbyname?name=${name}`,
+        success: function (response) {
+          $('#users-search-table > tbody > tr').remove();
+
+          for (let user of response) {
+            const row = userSearchTable.insertRow();
+            const idCell = row.insertCell(0);
+            const nameCell = row.insertCell(1);
+            const ageCell = row.insertCell(2);
+            const editCell = row.insertCell(3);
+            const deleteCell = row.insertCell(4);
+
+            idCell.innerHTML = user.id;
+            nameCell.innerHTML = user.name;
+            ageCell.innerHTML = user.age;
+
+            editCell.outerHTML = `<td><button class="btn btn-warning" onClick="placeOnEdit(${user.id})">Editar</button></td>`;
+            deleteCell.outerHTML = `<td><button class="btn btn-danger" onClick="deleteUser(${user.id})">Excluir</button></td>`;
+          }
+        }
+      }).fail(function (xhr, status, errorThrown) {
+        alert("Erro ao buscar usuario: " + xhr.responseText);
+      });
+    }
+
+    function placeOnEdit(id) {
+      $.ajax({
+        method: "GET",
+        url: `user/findbyid?userId=${id}`,
+        success: function (response) {
+          $("#id").val(response.id)
+          $("#name").val(response.name)
+          $("#age").val(response.age)
+        }
+      }).fail(function (xhr, status, errorThrown) {
+        alert("Erro ao buscar usuario: " + xhr.responseText);
+      });
+
+      $('#searchUser').modal('hide');
+    }
+
+    function deleteUser(id) {
+      $.ajax({
+        method: 'DELETE',
+        url: `user/${id}`,
+        success: function (response) {
+          alert("Usuário excluido!");
         },
         error: function (jqXHR, textStatus, errorThrown) {
           alert("Houve um problema: " + xhr.responseText);

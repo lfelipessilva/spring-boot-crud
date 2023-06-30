@@ -52,6 +52,6 @@ public class UserController {
 
   @GetMapping(value="findbyname")
   public List<User> findByName(@RequestParam(name="name") String name) {
-    return repository.findByName(name);
+    return repository.findByNameContaining(name);
   }
 }
